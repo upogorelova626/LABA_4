@@ -13,22 +13,11 @@ using bsoncxx::builder::basic::kvp;
 
 std::map<std::string, Session> SessionAgregator::currentConnections;
 
-bool SessionAgregator::sessionDead(std::string uuidForSession) {
-    auto availableSession = currentConnections.find(uuidForSession);
-    if (availableSession != currentConnections.end()) {
-        auto thisSession = currentConnections[uuidForSession];
-        if (diffMoreTtl(thisSession.creationTime)) {
-            // если сессия протухла, выкинуть её из мапы
-            currentConnections.erase(uuidForSession);
-            return true;
-        } else {
-            updateSessionTime(uuidForSession, thisSession);
-            return false;
-        }
-    } else {
-        // если сессии совсем нет в мапе, значит она не создавалась или протухла
-        return true;
-    }
+bool SessionAgregator::diffMoreTtl(tm creationTime) {
+    time_t seconds = time(NULL);
+    tm *now = localtime(&seconds);
+    auto diff = difftime(mktime(now), mktime(&creationTime));
+    return diff >= TTL + 5;
 }
 
 void SessionAgregator::updateSessionTime(const std::string &uuidForSession, Session &thisSession) {
