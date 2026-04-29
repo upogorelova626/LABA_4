@@ -16,8 +16,8 @@ std::map<std::string, Session> SessionAgregator::currentConnections;
 bool SessionAgregator::diffMoreTtl(tm creationTime) {
     time_t seconds = time(NULL);
     tm *now = localtime(&seconds);
-    double diff = difftime(mktime(now), mktime(&creationTime));
-    return diff > TTL;
+    auto diff = difftime(mktime(now), mktime(&creationTime));
+    return diff >= TTL + 5;
 }
 
 void SessionAgregator::updateSessionTime(const std::string &uuidForSession, Session &thisSession) {
